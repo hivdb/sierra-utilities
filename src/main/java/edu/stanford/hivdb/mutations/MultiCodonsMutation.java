@@ -20,11 +20,16 @@
 
 package edu.stanford.hivdb.mutations;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.util.Strings;
+
+import com.google.common.collect.Lists;
 
 import edu.stanford.hivdb.viruses.Gene;
 import edu.stanford.hivdb.viruses.Virus;
@@ -40,26 +45,26 @@ public class MultiCodonsMutation<VirusT extends Virus<VirusT>> extends AAMutatio
 		private final Character aminoAcid;
 		private final Long numReads;
 		private final Double percent;
-		
+
 		public AAReads(char aminoAcid, long numReads, double percent) {
 			this.aminoAcid = aminoAcid;
 			this.numReads = numReads;
 			this.percent = percent;
 		}
-		
+
 		public Character getAminoAcid() {
 			return aminoAcid;
 		}
-		
+
 		public Long getNumReads() {
 			return numReads;
 		}
-		
+
 		public Double getPercent() {
 			return percent;
 		}
 	}
-	
+
 	private static final int DEFAULT_MAX_DISPLAY_AAS = 6;
 
 	private final long totalReads;
@@ -134,10 +139,10 @@ public class MultiCodonsMutation<VirusT extends Virus<VirusT>> extends AAMutatio
 	 * @return a Long number
 	 */
 	public Long getTotalReads() { return totalReads; }
-	
+
 	/**
 	 * Gets list of read count / prevalence for each AA (include reference AA)
-	 * 
+	 *
 	 * @return a List of AAReads objects
 	 */
 	public List<AAReads> getAllAAReads() { return allAAReads; }
@@ -158,6 +163,34 @@ public class MultiCodonsMutation<VirusT extends Virus<VirusT>> extends AAMutatio
 	@Override
 	public boolean hasBDHVN() {
 		return getTriplet().matches(".*[BDHVN].*");
+	}
+
+	@Override
+	public String getHumanFormat() {
+		String fmtAAs = getAAsWithRefFirst();
+		if (isUnsequenced()) {
+			fmtAAs = "X";
+		}
+		else {
+			StringBuilder fmtAAsSb = new StringBuilder(fmtAAs);
+			int insLoc = fmtAAsSb.indexOf("_");
+			if (insLoc > -1) {
+				fmtAAsSb.deleteCharAt(insLoc);
+			}
+			int delLoc = fmtAAsSb.indexOf("-");
+			if (delLoc > -1) {
+				fmtAAsSb.deleteCharAt(delLoc);
+			}
+			List<String> fmtAAList = Lists.newArrayList(fmtAAsSb.toString());
+			if (insLoc > -1) {
+				fmtAAList.add("ins");
+			}
+			if (delLoc > -1) {
+				fmtAAList.add("del");
+			}
+			fmtAAs = Strings.join(fmtAAList, '/');
+		}
+		return String.format("%s%d%s", getRefChar(), position, fmtAAs);
 	}
 
 }

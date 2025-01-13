@@ -709,7 +709,7 @@ public class AAMutation<VirusT extends Virus<VirusT>> implements Mutation<VirusT
 	}
 
 	@Override
-	public final String getHumanFormat() {
+	public String getHumanFormat() {
 		String fmtAAs = getAAsWithRefFirst();
 		fmtAAs = (
 			fmtAAs
